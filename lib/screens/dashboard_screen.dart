@@ -588,34 +588,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Financial Dashboard'),
         actions: [
+          // Settings button
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+            tooltip: 'Server Settings',
+          ),
           // Period selector
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: DropdownButton<String>(
-              value: _selectedPeriod,
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-              elevation: 16,
-              style: const TextStyle(color: Colors.white),
-              underline: Container(height: 0),
-              onChanged: (String? value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedPeriod = value;
-                  });
-                  _saveSelectedPeriod(value);
-                  _calculateSummaryData();
-                }
-              },
-              dropdownColor: Theme.of(context).primaryColor,
-              items: _filterPeriods.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value, 
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                );
-              }).toList(),
-            ),
+          IconButton(
+            icon: const Icon(Icons.date_range),
+            onPressed: _showPeriodSelector,
+            tooltip: 'Select Period',
           ),
           // Connection status indicator
           IconButton(
@@ -1594,5 +1579,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Navigator.pushNamed(context, route);
       },
     );
+  }
+
+  void _showPeriodSelector() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  'Select Time Period',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              ...List.generate(
+                _filterPeriods.length,
+                (index) => ListTile(
+                  leading: Icon(
+                    _selectedPeriod == _filterPeriods[index]
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  title: Text(_filterPeriods[index]),
+                  subtitle: Text(_getPeriodDescription(_filterPeriods[index])),
+                  onTap: () async {
+                    final newPeriod = _filterPeriods[index];
+                    if (newPeriod != _selectedPeriod) {
+                      setState(() {
+                        _selectedPeriod = newPeriod;
+                      });
+                      await _saveSelectedPeriod(newPeriod);
+                      _calculateSummaryData();
+                    }
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _getPeriodDescription(String period) {
+    final now = DateTime.now();
+    final dateFormat = DateFormat('MMM d, y');
+    
+    if (period == 'This Month') {
+      final startDate = DateTime(now.year, now.month, 1);
+      final endDate = DateTime(now.year, now.month + 1, 0);
+      return '${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}';
+    } else if (period == 'Last Month') {
+      final startDate = DateTime(now.year, now.month - 1, 1);
+      final endDate = DateTime(now.year, now.month, 0);
+      return '${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}';
+    } else if (period == 'This Year') {
+      final startDate = DateTime(now.year, 1, 1);
+      final endDate = DateTime(now.year, 12, 31);
+      return '${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}';
+    } else {
+      return 'All data since the beginning';
+    }
   }
 } 
