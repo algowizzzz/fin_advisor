@@ -17,14 +17,23 @@ import 'screens/goals_screen.dart';
 import 'screens/goal_form_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'services/api_service.dart';
+import 'services/update_api_url.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Try to discover backend port on startup
-  final apiService = ApiService();
-  await apiService.discoverBackendPort();
+  // Always use the remote server URL
+  print('Setting up remote server connection...');
+  
+  // Set the API URL to the remote server
+  await ApiUrlUpdater.setRemoteServer();
+  
+  // Print the current URL for verification
+  final currentUrl = await ApiUrlUpdater.getCurrentUrl();
+  print('Connected to remote server API at: $currentUrl');
+  print('Remote server: ${ApiUrlUpdater.remoteUrl}');
   
   runApp(const MyApp());
 }
@@ -83,6 +92,7 @@ class MyApp extends StatelessWidget {
             token: '',
           ),
           '/profile': (context) => const ProfileScreen(),
+          '/settings': (context) => const SettingsScreen(),
           '/income': (context) => const IncomeScreen(),
           '/add-income': (context) => const IncomeFormScreen(),
           '/edit-income': (context) => IncomeFormScreen(income: ModalRoute.of(context)?.settings.arguments as dynamic),

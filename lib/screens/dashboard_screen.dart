@@ -147,9 +147,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusRow('Backend', _isConnected),
-            _buildStatusRow('Database', _isDatabaseConnected),
+            _buildStatusRow('Remote Server', _isConnected),
+            _buildStatusRow('MongoDB Database', _isDatabaseConnected),
             _buildStatusRow('Authentication', _isAuthenticated),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Connected to remote server at 44.207.118.69',
+                      style: TextStyle(fontSize: 12, color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
         actions: [
@@ -616,8 +637,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 : Colors.red,
             tooltip: _isConnected 
                 ? _isDatabaseConnected 
-                    ? 'Connected to database' 
-                    : 'Backend connected, database offline'
+                    ? 'Connected to remote server' 
+                    : 'Remote server connected, database offline'
                 : 'Offline mode',
             onPressed: () {
               _showConnectionStatus(context);
